@@ -8,6 +8,7 @@ namespace TestJson.JsonEntities
 {
     public class TransportNode
     {
-
+        public string PlaceAndTime { get; set; }
+        public string TransportData { get; set; }
     }
 }
