@@ -11,7 +11,7 @@ namespace TestJson.Functions
 {
     public class GeoDirectionsHEREApi
     {
-        public static void GetGeoDirectionsHERE(string StartAdress, string EndAdress)
+        public static TransportPathway GetGeoDirectionsHERE(string StartAdress, string EndAdress)
         {
             TransportPathway pathway = new TransportPathway();
             var client = new WebClient();
@@ -19,7 +19,11 @@ namespace TestJson.Functions
             (string latitude, string Langitude) EndCoordinate = GeoCoding.GetLocation(EndAdress);
             var text = client.DownloadString("https://transit.router.hereapi.com/v8/routes?apiKey=etD-X973Kg34aiS8AbEKeptq9SZD3euMf_HM-XKoudQ&origin=" + StartCoordinate.latitude + "," + StartCoordinate.Langitude + "&destination=" + EndCoordinate.latitude + "," + EndCoordinate.Langitude + "&departureTime=2021-07-02T17:00:00");
             GeoDirectionsHEREApiJSONObject post = JsonConvert.DeserializeObject<GeoDirectionsHEREApiJSONObject>(text);
-
+            if (StartCoordinate.Langitude == "0" || StartCoordinate.latitude == "0" || EndCoordinate.Langitude == "0" || EndCoordinate.latitude == "0")
+            {
+                pathway.ErrorFound = true;
+                return pathway;
+            }
             try
             {
                 var instructions = post.Routes.FirstOrDefault().Sections;
@@ -68,18 +72,33 @@ namespace TestJson.Functions
                     Console.WriteLine("");
                 }
 
+                pathway.EndLatitude = EndCoordinate.latitude;
+                pathway.EndLocation = EndAdress;
+                pathway.EndLongitude = EndCoordinate.Langitude;
+                pathway.StartLatitude = StartCoordinate.latitude;
+                pathway.StartLocation = StartAdress;
+                pathway.StartLongitude = StartCoordinate.Langitude;
+
+                return pathway;
+                
             }
 #pragma warning disable CS0168 // Variable is declared but never used
             catch (NullReferenceException nullex)
 #pragma warning restore CS0168 // Variable is declared but never used
             {
                 Console.WriteLine("Incorrect value given");
+                TransportPathway pathwayNullReferenceEx = new TransportPathway();
+                pathwayNullReferenceEx.ErrorFound = true;
+                return pathwayNullReferenceEx;
             }
 #pragma warning disable CS0168 // Variable is declared but never used
             catch (WebException webex)
 #pragma warning restore CS0168 // Variable is declared but never used
             {
                 Console.WriteLine("Incorrect value given");
+                TransportPathway pathwayWebEx = new TransportPathway();
+                pathwayWebEx.ErrorFound = true;
+                return pathwayWebEx;
             }
 
 #pragma warning disable CS0168 // Variable is declared but never used
@@ -87,6 +106,9 @@ namespace TestJson.Functions
 #pragma warning restore CS0168 // Variable is declared but never used
             {
                 Console.WriteLine("Something went wrong");
+                TransportPathway pathwayGenEx = new TransportPathway();
+                pathwayGenEx.ErrorFound = true;
+                return pathwayGenEx;
             }
         }
     }
