@@ -11,7 +11,8 @@ namespace TestJson
     {
         static void Main(string[] args)
         {
-            GeoDirectionsHEREApi.GetGeoDirectionsHERE();
+            //GeoCoding.GetLocation("Tjepmahof");
+            GeoDirectionsHEREApi.GetGeoDirectionsHERE("Tjepmahof","Utrecht centraal");
         }
     }
 }
