@@ -12,7 +12,7 @@ namespace TestJson
         static void Main(string[] args)
         {
             //GeoCoding.GetLocation("Tjepmahof");
-            GeoDirectionsHEREApi.GetGeoDirectionsHERE("Tjepmahof","Utrecht centraal");
+            GeoDirectionsHEREApi.GetGeoDirectionsHERE("Utrecht centraal","Amersfoort centraal");
         }
     }
 }

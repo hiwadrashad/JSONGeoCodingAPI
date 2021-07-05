@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
+using TestJson.BLL;
 using TestJson.JsonEntities;
 
 namespace TestJson.Functions
@@ -17,70 +18,23 @@ namespace TestJson.Functions
             var client = new WebClient();
             (string latitude, string Langitude) StartCoordinate = GeoCoding.GetLocation(StartAdress);
             (string latitude, string Langitude) EndCoordinate = GeoCoding.GetLocation(EndAdress);
-            var text = client.DownloadString("https://transit.router.hereapi.com/v8/routes?apiKey=etD-X973Kg34aiS8AbEKeptq9SZD3euMf_HM-XKoudQ&origin=" + StartCoordinate.latitude + "," + StartCoordinate.Langitude + "&destination=" + EndCoordinate.latitude + "," + EndCoordinate.Langitude + "&departureTime=2021-07-02T17:00:00");
-            GeoDirectionsHEREApiJSONObject post = JsonConvert.DeserializeObject<GeoDirectionsHEREApiJSONObject>(text);
             if (StartCoordinate.Langitude == "0" || StartCoordinate.latitude == "0" || EndCoordinate.Langitude == "0" || EndCoordinate.latitude == "0")
             {
+
                 pathway.ErrorFound = true;
                 return pathway;
             }
             try
             {
-                var instructions = post.Routes.FirstOrDefault().Sections;
-                var LastIndex = instructions.Last();
-                foreach (var instruction in instructions)
-                {
-                    TransportNode node = new TransportNode();
-
-                    if (!(instruction.Type == "transit"))
-                    {
-                        if (instruction.Type == "pedestrian")
-                        {
-                            //Console.WriteLine("Lopend");
-                            node.TransportData = "Lopend";
-                        }
-                    }
-                    if (instruction.Transport.Category == "Train")
-                    {
-                        //Console.WriteLine("Trein " + instruction.Transport.Name);
-                        node.TransportData = ("Trein " + instruction.Transport.Name);
-                    }
-                    if (instruction.Transport.Category == "Bus")
-                    {
-                        //Console.WriteLine(instruction.Transport.Category + " " + instruction.Transport.Name);
-                        node.TransportData = (instruction.Transport.Category + " " + instruction.Transport.Name);
-                    }
-                    //Console.WriteLine(instruction.Arrival.Place.Name);
-                    node.PlaceAndTime = instruction.Arrival.Place.Name;
-                    //Console.WriteLine(instruction.Arrival.Time);
-                    if (instruction.Equals(LastIndex))
-                    {
-                        node.PlaceAndTime = EndAdress;
-                    }
-                    node.PlaceAndTime = (node.PlaceAndTime + " | " + instruction.Arrival.Time);
-
-                    pathway.Path.Add(node);
-
-
-                }
-
-                
-                foreach (var item in pathway.Path)
+                var filledinpathway = Pathway.GeneratePathWay(pathway, StartAdress, EndAdress);
+                foreach (var item in filledinpathway.Path)
                 {
                     Console.WriteLine(item.PlaceAndTime);
                     Console.WriteLine(item.TransportData);
                     Console.WriteLine("");
                 }
-
-                pathway.EndLatitude = EndCoordinate.latitude;
-                pathway.EndLocation = EndAdress;
-                pathway.EndLongitude = EndCoordinate.Langitude;
-                pathway.StartLatitude = StartCoordinate.latitude;
-                pathway.StartLocation = StartAdress;
-                pathway.StartLongitude = StartCoordinate.Langitude;
-
-                return pathway;
-                
+                Console.WriteLine(filledinpathway.EndLatitude);
+                return filledinpathway;                
             }
 #pragma warning disable CS0168 // Variable is declared but never used
             catch (NullReferenceException nullex)
